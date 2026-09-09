@@ -1,0 +1,52 @@
+identity:
+  author: "erbanku"
+  name: "composio-trigger"
+  label:
+    en_US: "Composio Trigger"
+  description:
+    en_US: "Receive verified Composio trigger events in Dify workflows."
+  icon: "composio-trigger.png"
+subscription_constructor:
+  parameters:
+    - name: "trigger_slug"
+      type: "string"
+      required: true
+      default: "OUTLOOK_MESSAGE_TRIGGER"
+      label:
+        en_US: "Composio Trigger Slug"
+    - name: "connected_account_id"
+      type: "string"
+      required: false
+      label:
+        en_US: "Connected Account ID"
+    - name: "user_id"
+      type: "string"
+      required: false
+      label:
+        en_US: "Composio User ID"
+    - name: "trigger_config"
+      type: "object"
+      required: false
+      label:
+        en_US: "Trigger Configuration"
+  credentials_schema:
+    api_key:
+      type: "secret-input"
+      required: true
+      label:
+        en_US: "Composio API Key"
+      help:
+        en_US: "Composio project API key for trigger instance management and webhook subscription setup."
+    webhook_secret:
+      type: "secret-input"
+      required: false
+      label:
+        en_US: "Webhook Secret"
+      help:
+        en_US: "Optional signing secret. If omitted, the secret returned by Composio is stored automatically."
+events:
+  - "events/trigger_message.yaml"
+  - "events/connected_account_expired.yaml"
+extra:
+  python:
+    source: "provider/composio_trigger.py"

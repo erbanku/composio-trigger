@@ -1,0 +1,32 @@
+identity:
+  name: "trigger_message"
+  author: "erbanku"
+  label:
+    en_US: "Composio Trigger Message"
+description:
+  en_US: "Dispatch a verified event emitted by an active Composio trigger instance."
+parameters:
+  - name: "trigger_slug"
+    type: "string"
+    required: false
+    label:
+      en_US: "Trigger Slug"
+    description:
+      en_US: "Composio trigger type slug."
+  - name: "trigger_id"
+    type: "string"
+    required: false
+    label:
+      en_US: "Trigger ID"
+    description:
+      en_US: "Composio trigger instance ID."
+output_schema:
+  type: "object"
+  properties:
+    event:
+      type: "string"
+    payload:
+      type: "object"
+extra:
+  python:
+    source: "events/trigger_message.py"

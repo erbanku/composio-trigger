@@ -1,0 +1,25 @@
+identity:
+  name: "connected_account_expired"
+  author: "erbanku"
+  label:
+    en_US: "Connected Account Expired"
+description:
+  en_US: "Dispatch when Composio reports an expired connected account."
+parameters:
+  - name: "toolkit"
+    type: "string"
+    required: false
+    label:
+      en_US: "Toolkit"
+    description:
+      en_US: "Expired toolkit slug."
+output_schema:
+  type: "object"
+  properties:
+    event:
+      type: "string"
+    payload:
+      type: "object"
+extra:
+  python:
+    source: "events/connected_account_expired.py"
