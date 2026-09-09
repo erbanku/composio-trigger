@@ -7,6 +7,9 @@ label:
 description:
   en_US: "Receive verified Composio trigger events in Dify workflows."
 icon: "composio-trigger.png"
+privacy: PRIVACY.md
+repo: https://github.com/erbanku/composio-trigger
+contact: 79493862+erbanku@users.noreply.github.com
 resource:
   memory: 1048576
   permission:

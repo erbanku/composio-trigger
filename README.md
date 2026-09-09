@@ -1,40 +1,70 @@
 # Composio Trigger
 
-`erbanku/composio-trigger` receives Composio trigger events in Dify workflows. It uses Composio API v3.1 to create one project webhook subscription per Dify trigger subscription, verifies every delivery with HMAC-SHA256 and a 300-second replay window, and dispatches V3 trigger and account-expiry events.
+Receive verified Composio trigger events in Dify workflows. One project webhook subscription per Dify trigger subscription, HMAC-SHA256 signatures, 300-second replay window.
+
+**Source:** [https://github.com/erbanku/composio-trigger](https://github.com/erbanku/composio-trigger)
+
+**Contact:** [GitHub issues](https://github.com/erbanku/composio-trigger/issues)
+
+## Overview
+
+Use this when an app event in Composio should start a Dify workflow. The companion [Composio](https://github.com/erbanku/composio) tool plugin is for outbound actions. This package only handles inbound events.
 
 ## Setup
 
-1. Install `artifacts/composio-trigger-0.0.1.difypkg`.
-2. Configure a Composio project API key.
-3. Configure the webhook secret returned by Composio when the webhook subscription is created. Keep it in Dify credentials; never place it in event payloads or URLs.
-4. Configure the Composio trigger instance separately through Composio's trigger API/SDK. A trigger instance needs a user ID, trigger type slug, trigger config, and optionally a specific connected-account ID.
-5. Let Dify create the webhook subscription for the trigger. The plugin registers `composio.trigger.message` and `composio.connected_account.expired` for the Dify endpoint.
+1. Install **Composio Trigger** from the Dify Plugin Marketplace (or from this repository's package).
+2. Configure your Composio project **API key**.
+3. Keep the Composio **webhook secret** in Dify credentials. Do not put it in payloads or URLs. If you leave it empty, the secret returned when the subscription is created is stored for you.
+4. Create the Composio trigger instance in Composio (user ID, trigger type slug, config, optional connected-account ID).
+5. Let Dify create the webhook subscription. The plugin registers `composio.trigger.message` and `composio.connected_account.expired`.
 
-The Composio project webhook URL must be publicly reachable. Composio signs requests with `webhook-id`, `webhook-timestamp`, and `webhook-signature`. The plugin rejects missing headers, invalid signatures, old timestamps, malformed JSON, oversized bodies, and trigger messages without a user ID.
+The Composio project webhook URL must be publicly reachable. Composio signs requests with `webhook-id`, `webhook-timestamp`, and `webhook-signature`.
+
+### Use the trigger
+
+Add this trigger to a **Workflow** (or Chatflow that supports triggers). Filter on trigger slug or connected account if you need a narrower subscription.
+
+## Screenshots
+
+![Overview](./_assets/screenshots/overview.png)
 
 ## Events
 
-- `trigger_message`: V3 `composio.trigger.message`; event data remains in the event payload and metadata identifies the trigger slug, trigger instance, connected account, auth config, and user.
-- `connected_account_expired`: V3 `composio.connected_account.expired`; use it to start a reconnect or notification workflow without trusting expired credentials.
+|           Event           |            Composio type             |                          Use                          |
+| :-----------------------: | :----------------------------------: | :---------------------------------------------------: |
+|      Trigger Message      |      `composio.trigger.message`      |        App event payload plus trigger metadata        |
+| Connected Account Expired | `composio.connected_account.expired` | Reconnect or notify without using expired credentials |
 
-Unknown Composio project events receive a safe 200 acknowledgement but are not dispatched to Dify. This prevents retry storms for lifecycle events the plugin does not expose.
+<details>
+<summary>Usage details</summary>
 
-## Lifecycle
+Unknown Composio project events get a 200 acknowledgement and are not dispatched, so retry storms do not start for lifecycle events this plugin does not expose.
 
-Subscription creation calls `POST /api/v3.1/webhook_subscriptions` with the Dify endpoint and the two supported event types, then stores the returned subscription ID. Unsubscribe calls `DELETE /api/v3.1/webhook_subscriptions/{id}`. Refresh is a no-op because Composio webhook subscriptions do not expire. Trigger instance creation, enable/disable, and deletion remain Composio API responsibilities.
+Subscription create: `POST /api/v3.1/webhook_subscriptions`. Unsubscribe: `DELETE /api/v3.1/webhook_subscriptions/{id}`. Refresh is a no-op. Trigger instance create/enable/disable/delete stay in Composio.
 
-The plugin does not automatically create or delete Composio trigger instances. That separation avoids silently subscribing users to provider events and allows operators to choose exact toolkit trigger slugs and configs. Use Composio's current trigger type schema before creating an instance; trigger payload schemas can change with toolkit versions.
+This plugin does not create or delete trigger instances for you. Pick the exact toolkit trigger slug and config in Composio first.
 
-## Security notes
+</details>
 
-Use a dedicated project API key with only required trigger-management permissions. Do not log webhook secrets, raw payloads, authorization URLs, or provider data. Rotate the Composio webhook secret if it leaks, update Dify credentials, and recreate/refresh the subscription. The plugin performs no automatic retries after dispatch failures; Composio should retry its delivery according to its delivery policy.
+<details>
+<summary>Limits and security</summary>
 
-The package pins and bundles `dify-plugin==0.6.0`, which provides native trigger subscription and event interfaces. No fallback classes or mocked SDK modules are used. Regression tests exercise credential verification through the real SDK's stdin/stdout request protocol, including missing credentials.
+- Rejects missing headers, bad signatures, old timestamps, malformed JSON, oversized bodies, and trigger messages without a user ID.
+- Use a dedicated API key with only the trigger permissions you need.
+- No automatic retries after Dify dispatch failures. Composio retries per its delivery policy.
+- Rotate the webhook secret if it leaks, then update Dify credentials and recreate the subscription.
 
-## References
+See [PRIVACY.md](./PRIVACY.md).
 
-- https://docs.composio.dev/docs/triggers
-- https://docs.composio.dev/docs/setting-up-triggers/creating-triggers
-- https://docs.composio.dev/docs/setting-up-triggers/subscribing-to-events
-- https://docs.composio.dev/reference/api-reference/webhook-subscriptions
-- https://docs.composio.dev/reference/api-reference/triggers
+</details>
+
+<details>
+<summary>References</summary>
+
+- [Triggers](https://docs.composio.dev/docs/triggers)
+- [Subscribing to events](https://docs.composio.dev/docs/setting-up-triggers/subscribing-to-events)
+- [Webhook subscriptions API](https://docs.composio.dev/reference/api-reference/webhook-subscriptions)
+
+Independent plugin under the `erbanku` namespace. Not an official Composio product.
+
+</details>
